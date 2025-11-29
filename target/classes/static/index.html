@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Integração XML & SQL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div class="container">
+    <h1>Relatório de Integração</h1>
+    <p class="subtitle">Dados unificados do PostgreSQL (Docker) e Arquivos XML</p>
+
+    <button onclick="buscarDados()">🔄 Gerar Relatório Agora</button>
+
+    <div id="loader" class="loader"></div>
+
+    <div class="table-container">
+        <table id="tabela">
+            <thead>
+            <tr>
+                <th>Código (XML)</th>
+                <th>Nome da Peça (SQL)</th>
+                <th>Quantidade</th>
+            </tr>
+            </thead>
+            <tbody id="corpo-tabela">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    async function buscarDados() {
+        const loader = document.getElementById('loader');
+        const tabela = document.getElementById('tabela');
+        const corpo = document.getElementById('corpo-tabela');
+
+        // Resetar tela
+        tabela.style.display = 'none';
+        loader.style.display = 'block';
+        corpo.innerHTML = '';
+
+        try {
+            await new Promise(r => setTimeout(r, 600));
+
+            const resposta = await fetch('/relatorio');
+            const dados = await resposta.json();
+
+            if(dados.length === 0) {
+                alert("Nenhum dado encontrado!");
+                loader.style.display = 'none';
+                return;
+            }
+
+            dados.forEach(item => {
+                const classeNome = item.nome.includes("NÃO") || item.nome.includes("ERRO")
+                    ? "status-erro" : "status-ok";
+
+                const html = `
+                        <tr>
+                            <td><strong>${item.codigo}</strong></td>
+                            <td class="${classeNome}">${item.nome}</td>
+                            <td>${item.quantidade}</td>
+                        </tr>
+                    `;
+                corpo.innerHTML += html;
+            });
+
+            // Mostra tudo
+            loader.style.display = 'none';
+            tabela.style.display = 'table';
+
+        } catch (erro) {
+            console.error(erro);
+            loader.style.display = 'none';
+            alert("Erro ao conectar com o Servidor! Verifique se o Java está rodando.");
+        }
+    }
+</script>
+</body>
+</html>

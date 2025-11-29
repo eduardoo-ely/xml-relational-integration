@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: db_postgres_xml
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: trabalho_integracao
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./script banco/postcriatab.sql:/docker-entrypoint-initdb.d/init.sql
+
+  basex:
+    image: basex/basexhttp:latest
+    container_name: db_basex
+    ports:
+      - "1985:1984"
+      - "8985:8984"
+    volumes:
+      - ./basex_data:/srv/basex/data
