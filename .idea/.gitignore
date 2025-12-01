@@ -1,8 +1,30 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+
 # Editor-based HTTP Client requests
 /httpRequests/
+
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# --- Java e Maven (Compilados) ---
+target/
+*.class
+*.jar
+*.war
+
+# --- IntelliJ IDEA (Configurações da IDE) ---
+.idea/
+*.iml
+out/
+
+# --- Docker e BaseX (Dados gerados) ---
+# Ignora a pasta onde o BaseX salva o banco físico, pois ele é recriado pelo Docker
+basex_data/
+.logs/
+
+# --- Sistema Operacional ---
+.DS_Store
+Thumbs.db
