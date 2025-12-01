@@ -3,81 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Integração XML & SQL</title>
+    <title>Dashboard Completo - Integração BD</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
 
+    <style>
+        :root { --primary: #4e54c8; --secondary: #8f94fb; --bg: #f0f2f5; --card-bg: #ffffff; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
+
+        .header { text-align: center; margin-bottom: 40px; }
+        h1 { color: var(--primary); font-weight: 900; letter-spacing: 1px; }
+        button {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white; border: none; padding: 15px 40px; border-radius: 30px;
+            font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+        /* ETAPA 1: CARDS */
+        .etapa-titulo { font-size: 1.2rem; color: #666; margin: 30px 0 10px 0; border-left: 5px solid var(--primary); padding-left: 10px; }
+
+        .cards-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+
+        .card { background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .card-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+        .card-value { font-size: 24px; font-weight: bold; color: var(--primary); margin: 10px 0; }
+        .card-label { font-size: 14px; color: #888; text-transform: uppercase; }
+
+        /* ETAPA 2: TABELA */
+        .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: var(--primary); color: white; }
+        th, td { padding: 15px; text-align: left; }
+        tbody tr { border-bottom: 1px solid #eee; }
+        tbody tr:hover { background-color: #f8f9fa; }
+
+        /* Badges */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7em; font-weight: bold; }
+        .badge-xml { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
+        .badge-sql { background: #e3f2fd; color: #1565c0; border: 1px solid #64b5f6; }
+
+        #loader { display: none; text-align: center; margin: 20px; font-size: 20px; color: var(--primary); }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Relatório de Integração</h1>
-    <p class="subtitle">Dados unificados do PostgreSQL (Docker) e Arquivos XML</p>
+<div class="header">
+    <h1>Sistema de Integração de Dados</h1>
+    <p>PostgreSQL (Docker) + XML (BaseX) + Java Spring Boot</p>
+    <button onclick="carregarDashboard()">🔄 Carregar Dashboard</button>
+</div>
 
-    <button onclick="buscarDados()">🔄 Gerar Relatório Agora</button>
+<div id="loader">Carregando dados do sistema...</div>
 
-    <div id="loader" class="loader"></div>
+<div id="dashboard" class="hidden">
+    <div class="etapa-titulo">Etapa 1: Estatísticas XML (XQuery)</div>
+    <div class="cards-container">
+        <div class="card">
+            <span class="card-icon">📦</span>
+            <div class="card-value" id="soma">0</div>
+            <div class="card-label">Total de Peças (Soma)</div>
+        </div>
+        <div class="card">
+            <span class="card-icon">💰</span>
+            <div class="card-value" id="media">R$ 0,00</div>
+            <div class="card-label">Preço Médio</div>
+        </div>
+        <div class="card">
+            <span class="card-icon">🏭</span>
+            <div class="card-value" id="fornecedor">-</div>
+            <div class="card-label">Maior Fornecedor</div>
+        </div>
+        <div class="card">
+            <span class="card-icon">🇫🇷</span>
+            <div class="card-value" id="paris">-</div>
+            <div class="card-label">Projetos em Paris</div>
+        </div>
+        <div class="card">
+            <span class="card-icon">⏮️</span>
+            <div class="card-value" id="penultima" style="font-size: 18px;">-</div>
+            <div class="card-label">Penúltima Peça</div>
+        </div>
+    </div>
 
+    <div class="etapa-titulo">Etapa 2: Relatório de Integração (SQL + XML)</div>
     <div class="table-container">
-        <table id="tabela">
+        <table>
             <thead>
             <tr>
-                <th>Código (XML)</th>
-                <th>Nome da Peça (SQL)</th>
-                <th>Quantidade</th>
+                <th>Cód. <span class="badge badge-xml">XML</span></th>
+                <th>Nome <span class="badge badge-sql">SQL</span></th>
+                <th>Cor <span class="badge badge-sql">SQL</span></th>
+                <th>Cidade <span class="badge badge-sql">SQL</span></th>
+                <th>Qtd. <span class="badge badge-xml">XML</span></th>
             </tr>
             </thead>
-            <tbody id="corpo-tabela">
+            <tbody id="tabela-corpo">
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    async function buscarDados() {
-        const loader = document.getElementById('loader');
-        const tabela = document.getElementById('tabela');
-        const corpo = document.getElementById('corpo-tabela');
-
-        // Resetar tela
-        tabela.style.display = 'none';
-        loader.style.display = 'block';
-        corpo.innerHTML = '';
+    async function carregarDashboard() {
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('dashboard').classList.add('hidden');
 
         try {
-            await new Promise(r => setTimeout(r, 600));
+            // 1. Buscar Etapa 1 (Stats)
+            const res1 = await fetch('/etapa1');
+            const stats = await res1.json();
 
-            const resposta = await fetch('/relatorio');
-            const dados = await resposta.json();
+            document.getElementById('soma').innerText = stats.somaQuantidades;
+            document.getElementById('media').innerText = "R$ " + stats.precoMedioPecas;
+            document.getElementById('fornecedor').innerText = stats.maiorFornecedor;
+            document.getElementById('penultima').innerText = stats.penultimaPeca;
+            document.getElementById('paris').innerText = stats.projetosParis.join(", ") || "Nenhum";
 
-            if(dados.length === 0) {
-                alert("Nenhum dado encontrado!");
-                loader.style.display = 'none';
-                return;
-            }
+            // 2. Buscar Etapa 2 (Tabela)
+            const res2 = await fetch('/relatorio');
+            const relatorio = await res2.json();
 
-            dados.forEach(item => {
-                const classeNome = item.nome.includes("NÃO") || item.nome.includes("ERRO")
-                    ? "status-erro" : "status-ok";
+            const corpo = document.getElementById('tabela-corpo');
+            corpo.innerHTML = '';
 
-                const html = `
+            relatorio.forEach(item => {
+                corpo.innerHTML += `
                         <tr>
-                            <td><strong>${item.codigo}</strong></td>
-                            <td class="${classeNome}">${item.nome}</td>
-                            <td>${item.quantidade}</td>
+                            <td><b>${item.codigo}</b></td>
+                            <td>${item.nome}</td>
+                            <td>${item.cor}</td>
+                            <td>${item.cidade}</td>
+                            <td><span style="font-weight:bold;color:#333">${item.quantidade}</span></td>
                         </tr>
                     `;
-                corpo.innerHTML += html;
             });
 
-            // Mostra tudo
-            loader.style.display = 'none';
-            tabela.style.display = 'table';
+            // Mostrar tudo
+            await new Promise(r => setTimeout(r, 500)); // Delay estético
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('dashboard').classList.remove('hidden');
 
-        } catch (erro) {
-            console.error(erro);
-            loader.style.display = 'none';
-            alert("Erro ao conectar com o Servidor! Verifique se o Java está rodando.");
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao conectar com o Java! Verifique se o backend está rodando.");
+            document.getElementById('loader').style.display = 'none';
         }
     }
 </script>
