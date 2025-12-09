@@ -115,4 +115,4 @@ Retorna a lista completa de peças integradas com seus fornecimentos.
 
 ## 👤 Autores
 
-Desenvolvido por **Eduardo de Paula, Inaye Machado, Mateus Conte e Mateus da Silva** como parte da disciplina de Banco de Dados (Integração de Dados Semiestruturados).
+Desenvolvido por **Eduardo de Paula** como parte da disciplina de Banco de Dados (Integração de Dados Semiestruturados).
